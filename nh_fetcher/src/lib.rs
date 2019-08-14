@@ -90,6 +90,10 @@ pub fn fetch_to_dir(urls: Vec<String>, directory: &str, progress: bool) -> Resul
     let mut progress_bar: indicatif::ProgressBar;
     if progress {
         progress_bar = indicatif::ProgressBar::new(urls.len() as u64);
+        progress_bar.set_style(
+            indicatif::ProgressStyle::default_bar()
+            .template("{elapsed_precise} [{bar:40.cyan/blue}] {pos}/{len} ({eta})")
+        );
     } else {
         progress_bar = indicatif::ProgressBar::hidden()
     }
