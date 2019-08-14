@@ -122,7 +122,7 @@ pub fn fetch_to_dir(urls: Vec<String>, directory: &str, progress: bool) -> Resul
                         let mut image = File::create(&file_name)
                             .expect(&format!("Failed to create {}", file_name));
                         if let Ok(written) = response.copy_to(&mut image) {
-                            log::info!("Written {} bytes", written);
+                            log::trace!("Written {} bytes", written);
                             success += 1;
                         }
                     },
@@ -138,7 +138,7 @@ pub fn fetch_to_dir(urls: Vec<String>, directory: &str, progress: bool) -> Resul
 
         progress_bar.inc(1);
     }
-    progress_bar.finish();
+    progress_bar.finish_with_message(&format!("Successfully downloaded {} images", urls.len()));
 
     Ok((success, urls.len()))
 }
