@@ -25,7 +25,7 @@ pub fn fetch_urls(fetch_url: &str) -> Result<(String, Vec<String>), String> {
         .send() {
             Ok(res) => res,
             Err(e) => {
-                log::error!("{} occured while fetching {}", e, fetch_url);
+                log::error!("\"{}\" occured while fetching {}", e, fetch_url);
                 return Result::Err(e.to_string());
             }
         };
@@ -35,7 +35,7 @@ pub fn fetch_urls(fetch_url: &str) -> Result<(String, Vec<String>), String> {
             match res.text() {
                 Ok(data) => data,
                 Err(e) => {
-                    log::error!("{} occured while trying to get raw text data from {}", e, fetch_url);
+                    log::error!("\"{}\" occured while trying to get raw text data from {}", e, fetch_url);
                     return Result::Err(e.to_string());
                 }
             }          
