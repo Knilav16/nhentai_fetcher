@@ -11,8 +11,9 @@ fn main() {
     let fetch_url = &args[1];
 
     let (title, urls) = nh_fetcher::fetch_urls(&fetch_url).unwrap();
+    log::info!("Fetching {}", title);
     let (success, total) = nh_fetcher::fetch_to_dir(urls, &title, true)
-        .unwrap();
+        .expect("Fetch failure");
         
     log::info!("Successfully downloaded {} out of {} images", success, total);
 }

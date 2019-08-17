@@ -1,6 +1,7 @@
 use std::fs::{File, create_dir};
 use log;
 use indicatif;
+use dialoguer::Input;
 use reqwest::{Client, StatusCode, header::{USER_AGENT, CONTENT_TYPE}};
 use select::document::Document;
 use select::predicate::{Predicate, Class, Name, Attr};
@@ -79,24 +80,45 @@ pub fn fetch_urls(fetch_url: &str) -> Result<(String, Vec<String>), String> {
 /// * `progress` - Tells if the function should show progression using `indicatif`
 pub fn fetch_to_dir(urls: Vec<String>, directory: &str, progress: bool) -> Result<(usize, usize), String> {
     // Creating the album directory
-    create_dir(&directory)
-        .expect(&format!("Failed to create folder at {}", directory));
+    let mut final_directory = String::from(directory);
+    if let Err(e) = create_dir(&final_directory) {
+        log::warn!("Failed to create {}: \"{}\", removing invalid characters", &final_directory, e);
+        let forbidden_chars = "/\\:*?\"<>|";
+        
+        final_directory.retain(|c| {
+            !forbidden_chars.contains(c)
+        });
 
+        log::warn!("Attempting to create {}", &final_directory);
+
+        if let Err(_) = create_dir(&final_directory) {
+            log::warn!("Failed to correct directory name: {}", &final_directory);
+            final_directory = Input::new()
+                .with_prompt(&format!("Enter a valid name for {}", &final_directory))
+                .interact()
+                .expect("Failed to read user input");
+            if let Err(e) = create_dir(&final_directory) {
+                return Err(format!("Failed to create user inputted directory: {}", e));
+            }
+        }
+    }
+        
     let client = reqwest::Client::new();
 
     let mut success = 0; // Counting successful downloads
     // Fetching all the images and saving them on the disk
 
-    let mut progress_bar: indicatif::ProgressBar;
-    if progress {
-        progress_bar = indicatif::ProgressBar::new(urls.len() as u64);
-        progress_bar.set_style(
-            indicatif::ProgressStyle::default_bar()
-            .template("{elapsed_precise} [{bar:40.cyan/blue}] {pos}/{len} ({eta})")
-        );
-    } else {
-        progress_bar = indicatif::ProgressBar::hidden()
-    }
+    let progress_bar = match progress {
+        true => {
+            let tmp = indicatif::ProgressBar::new(urls.len() as u64);
+            tmp.set_style(
+                indicatif::ProgressStyle::default_bar()
+                .template("{elapsed_precise} [{bar:40.cyan/blue}] {pos}/{len} ({eta})")
+            );
+            tmp
+        },
+        false => indicatif::ProgressBar::hidden()
+    };
 
     for (i, l) in urls.iter().enumerate() {
         log::trace!("Fetching {}", l);
@@ -115,8 +137,8 @@ pub fn fetch_to_dir(urls: Vec<String>, directory: &str, progress: bool) -> Resul
                 match response.headers().get(CONTENT_TYPE) {
                     Some(content_type) => {
                         let file_name = match content_type.to_str().unwrap() {
-                            "image/png" => format!("{}/{}.png", directory, i + 1),
-                            "image/jpeg" => format!("{}/{}.jpg", directory, i + 1),
+                            "image/png" => format!("{}/{}.png", &final_directory, i + 1),
+                            "image/jpeg" => format!("{}/{}.jpg", &final_directory, i + 1),
                             _ => {
                                 log::error!("GET to {} did not return a jpg or a png", l);
                                 continue;
@@ -139,7 +161,6 @@ pub fn fetch_to_dir(urls: Vec<String>, directory: &str, progress: bool) -> Resul
                 continue;
             }
         }
-
         progress_bar.inc(1);
     }
     progress_bar.finish_with_message(&format!("Successfully downloaded {} images", urls.len()));
