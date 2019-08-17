@@ -3,4 +3,4 @@
 *.jpg
 
 * linguist-vendored
-*.js linguist-vendored=false
+*.rs linguist-vendored=false
