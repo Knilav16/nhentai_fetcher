@@ -1,14 +1,12 @@
 use nh_fetcher;
 use log;
 use simplelog::*;
-use std::env;
+use dialoguer;
 
 fn main() {
-    TermLogger::init(LevelFilter::Info, Config::default(), TerminalMode::Stdout)
-        .expect("Failed to init the logger");
-
-    let args: Vec<String> = env::args().collect();
-    let fetch_url = &args[1];
+    let fetch_url: String = dialoguer::Input::new()
+        .with_prompt("Enter album link").interact()
+        .expect("Failed to read user input");
 
     let (title, urls) = nh_fetcher::fetch_urls(&fetch_url).unwrap();
     log::info!("Fetching {}", title);
