@@ -1,6 +1,7 @@
 use nh_fetcher;
 use log;
 use simplelog::*;
+use std::env;
 
 fn main() {
     TermLogger::init(LevelFilter::Info, Config::default(), TerminalMode::Stdout)
