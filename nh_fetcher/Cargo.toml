@@ -8,6 +8,8 @@ edition = "2018"
 
 [dependencies]
 reqwest = "0.9.19"
+image = "0.20.0"
+printpdf = "0.2.11"
 log = "0.4.8"
 indicatif = "0.11.0"
 dialoguer = "0.4.0"

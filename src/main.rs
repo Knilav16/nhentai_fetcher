@@ -1,4 +1,3 @@
-use std::env;
 use nh_fetcher;
 use log;
 use simplelog::*;
@@ -16,4 +15,8 @@ fn main() {
         .expect("Fetch failure");
         
     log::info!("Successfully downloaded {} out of {} images", success, total);
+
+    log::info!("Converting to PDF...");
+
+    nh_fetcher::convert_to_pdf_exp(&title, &"test.pdf".to_string(), &title);
 }
