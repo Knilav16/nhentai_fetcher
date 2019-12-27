@@ -1,13 +1,6 @@
-use std::fs::{File, create_dir, read_dir, remove_dir_all};
-use std::ffi::{OsString, OsStr};
-use std::io::BufWriter;
-use std::path::Path;
-use printpdf::types::plugins::graphics::two_dimensional::image::Image;
-use printpdf::{scale::Mm};
-use printpdf;
+use std::fs::{File, create_dir};
 use log;
 use indicatif;
-use dialoguer::Input;
 use reqwest::{Client, StatusCode, header::{USER_AGENT, CONTENT_TYPE}};
 use select::document::Document;
 use select::predicate::{Predicate, Class, Name, Attr};
@@ -98,14 +91,8 @@ pub fn fetch_to_dir(urls: Vec<String>, directory: &str, progress: bool) -> Resul
         log::warn!("Attempting to create {}", &final_directory);
 
         if let Err(_) = create_dir(&final_directory) {
-            log::warn!("Failed to correct directory name: {}", &final_directory);
-            final_directory = Input::new()
-                .with_prompt(&format!("Enter a valid name for {}", &final_directory))
-                .interact()
-                .expect("Failed to read user input");
-            if let Err(e) = create_dir(&final_directory) {
-                return Err(format!("Failed to create user inputted directory: {}", e));
-            }
+            log::error!("Failed to correct directory name: {}", &final_directory);
+            return Err(format!("Failed to correct directory name: {}", &final_directory));
         }
     }
         
