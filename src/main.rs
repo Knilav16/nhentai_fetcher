@@ -14,32 +14,26 @@ fn main() {
     let fetch_url: String;
     let path: String;
     let link_arg_present: bool;
-    let save_path_present: bool;
     
     if args.len() < 2 {
         println!("Usage: nhentai_fetcher <URL> [path] (path defaults to ./<album title>)");
         std::process::exit(0);
     } else {
-        fetch_url = args.get(2).unwrap().to_string();
+        fetch_url = args.get(1).unwrap().to_string();
         link_arg_present = true;
         if args.len() == 3 {
             path = args.last().unwrap().to_string();
-            save_path_present = true;
         } else {
             path = "".to_string();
-            save_path_present = false;
         }
     }
 
     let (title, urls) = nh_fetcher::fetch_urls(&fetch_url).unwrap();
-    log::info!("Fetching {}", title);
+    log::info!("Fetching {}", &title);
 
-    let save_path: String;
-    if save_path_present {
-        save_path = path;
-    } else {
-        save_path = title;
-    }
+    let save_path: String = format!("{}/{}", path, title);
+
+    log::info!("Saving at {}", save_path);
 
     let (success, total) = nh_fetcher::fetch_to_dir(urls, &save_path, true)
         .expect("Fetch failure");

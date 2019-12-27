@@ -1,4 +1,4 @@
-use std::fs::{File, create_dir};
+use std::fs::{File, create_dir_all};
 use log;
 use indicatif;
 use reqwest::{Client, StatusCode, header::{USER_AGENT, CONTENT_TYPE}};
@@ -80,7 +80,7 @@ pub fn fetch_urls(fetch_url: &str) -> Result<(String, Vec<String>), String> {
 pub fn fetch_to_dir(urls: Vec<String>, directory: &str, progress: bool) -> Result<(usize, usize), String> {
     // Creating the album directory
     let mut final_directory = String::from(directory);
-    if let Err(e) = create_dir(&final_directory) {
+    if let Err(e) = create_dir_all(&final_directory) {
         log::warn!("Failed to create {}: \"{}\", removing invalid characters", &final_directory, e);
         let forbidden_chars = "/\\:*?\"<>|";
         
@@ -90,7 +90,7 @@ pub fn fetch_to_dir(urls: Vec<String>, directory: &str, progress: bool) -> Resul
 
         log::warn!("Attempting to create {}", &final_directory);
 
-        if let Err(_) = create_dir(&final_directory) {
+        if let Err(_) = create_dir_all(&final_directory) {
             log::error!("Failed to correct directory name: {}", &final_directory);
             return Err(format!("Failed to correct directory name: {}", &final_directory));
         }
