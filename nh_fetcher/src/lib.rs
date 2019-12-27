@@ -1,8 +1,6 @@
 use std::fs::{File, create_dir, read_dir, remove_dir_all};
 use std::ffi::{OsString, OsStr};
 use std::io::BufWriter;
-use image::{GenericImageView};
-use image;
 use std::path::Path;
 use printpdf::types::plugins::graphics::two_dimensional::image::Image;
 use printpdf::{scale::Mm};
@@ -174,53 +172,4 @@ pub fn fetch_to_dir(urls: Vec<String>, directory: &str, progress: bool) -> Resul
     progress_bar.finish_with_message(&format!("Successfully downloaded {} images", urls.len()));
 
     Ok((success, urls.len()))
-}
-
-/// Converts images from `to_convert` and saves the album as a PDF
-/// Returns a Result over the size of the PDF
-/// # Arguments
-/// * `to_convert` - Path to the folder containing the downloaded album
-/// * `save_as` - Name of the PDF file
-/// * `title` - Title of the album for the metadata
-pub fn convert_to_pdf<P: AsRef<Path>>(to_convert: P, save_as: P, title: &str) -> Result<usize, String> {
-    let mut images = read_dir(to_convert).unwrap();
-    let first_image = image::open(images.next().unwrap().unwrap().path())
-        .expect("Failed to open image file");
-    let (w, h) = convert_to_mm(first_image.dimensions());
-
-    let (pdf_doc, page_index, layer_index) = printpdf::PdfDocument::new(title, Mm(w), Mm(h), "Layer 1");
-    let mut current_layer = pdf_doc.get_page(page_index).get_layer(layer_index);
-    let img = Image::from_dynamic_image(&first_image);
-    img.add_to_layer(current_layer,  None, None, None, None, None, None);
-    
-    for i in images {
-        let f = match i {
-            Ok(f) => f,
-            Err(_) => continue
-        };
-        
-        let (page_index, layer_index) = pdf_doc.add_page(Mm(w), Mm(h), "Layer 1");
-        current_layer = pdf_doc.get_page(page_index).get_layer(layer_index);
-
-        let file_name = f.path();
-        println!("{:?}", &file_name);
-        let tmp = image::open(file_name)
-            .expect("Failed to open image file");
-
-        let (w, h) = convert_to_mm(tmp.dimensions());
-        let img = Image::from_dynamic_image(&tmp);
-        img.add_to_layer(current_layer, None, None, None, None, None, None);
-    }
-
-    let mut pdf_writer = BufWriter::new(File::create(save_as).unwrap());
-    pdf_doc.save(&mut pdf_writer)
-        .expect("Could not save PDF");
-    Ok(10)
-}
-
-fn convert_to_mm(x: (u32, u32)) -> (f64, f64) {
-    // Converting pixels to inches to mm
-    let w = x.0 as f64 / 300.0 * 25.4;
-    let h = x.1 as f64 / 300.0 * 25.4;
-    (w, h)
 }
