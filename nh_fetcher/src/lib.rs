@@ -67,8 +67,6 @@ pub fn fetch_urls(fetch_url: &str) -> Result<(String, Vec<String>), String> {
         // thumb_url example : https://t.nhentai.net/galleries/<number>/<number>t.jpg
         let thumb_url = node.attr("data-src").unwrap();
         
-        log::info!("Before: {}", thumb_url);
-
         to_fetch.push(
             // Replace the first 't' by 'i', we use '//t' to not match with the 't' in 'http'
             thumb_url.replacen("//t", "i", 1)
